@@ -1,12 +1,3 @@
-<!-- Add this style at the top of your Markdown file -->
-<style>
-  .center-image {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-  }
-</style>
-
 # SQL Reference
 
 ## Order of queries:
