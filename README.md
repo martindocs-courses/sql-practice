@@ -1,3 +1,12 @@
+<!-- Add this style at the top of your Markdown file -->
+<style>
+  .center-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+
 # SQL Reference
 
 ## Order of queries:
@@ -42,6 +51,24 @@
 - [16. IN](#16-in)
   - [16.1. IN and NOT IN](#161-in-and-not-in)
   - [16.2. NOT IN](#162-not-in)
+- [17. BETWEEN](#between)
+  - [17.1. NOT BETWEEN](#171-not-between)
+  - [17.2. BETWEEN with IN](#172-between-with-in)
+  - [17.3. BETWEEN Text Values](#173-between-text-values)
+  - [17.4. NOT BETWEEN Text Values](#174-not-between-text-values)
+  - [17.5. BETWEEN Dates](#174-between-dates)
+- [18. AS](#as)
+  - [18.1. Aliases With a Space Character](#181-aliases-with-a-space-character)
+  - [18.2. Concatenate Columns](#182-concatenate-columns)
+  - [18.3. Alias for Tables](#183-alias-for-tables)
+- [19. JOIN](#join)
+  - [19.1. INNER JOIN](#191-inner-join)
+  - [19.2. LEFT OUTER JOIN](#192-left-outer-join)
+  - [19.3. RIGHT OUTER JOIN](#193-right-outer-join)
+  - [19.4. FULL OUTER JOIN](#194-full-outer-join)
+  - [19.5. LEFT excluding JOIN](#195-left-excluding-join)
+  - [19.6. RIGHT excluding JOIN](#196-right-excluding-join)
+  - [19.7. FULL OUTER excluding JOIN](#197-outer-excluding-join)
 
 
 ## 1. SELECT 
@@ -443,6 +470,279 @@ SELECT * FROM tableName WHERE column IN (SELECT column FROM tableName);
 -- NOT IN return all records that are NOT any of the values in the list
 SELECT * FROM tableName WHERE column NOT IN (conditions, ...);
 ```
+
+## 17. BETWEEN
+[Back to Table of Contents](#table-of-contents)
+
+The `BETWEEN` operator selects values within a given range. The values can be numbers, text, or dates.
+The `BETWEEN` operator is inclusive: begin and end values are included. 
+
+```sql
+SELECT * FROM tableName
+WHERE column BETWEEN value1 AND value2;
+```
+
+#### 17.1. NOT BETWEEN
+
+```sql
+-- To display the column outside the range 
+SELECT * FROM tableName
+WHERE column BETWEEN value1 AND value2;
+```
+
+#### 17.2. BETWEEN with IN
+
+```sql
+-- IN is the shortcut for OR operator
+SELECT * FROM tableName
+WHERE column1 BETWEEN numericValue1 AND numericValue2
+AND column2 IN (numericValue1, numericValue2, numericValue3);
+```
+
+#### 17.3. BETWEEN Text Values
+
+```sql
+SELECT * FROM tableName
+WHERE column1 BETWEEN textValue1 AND textValue1
+ORDER BY column;
+```
+
+#### 17.4. NOT BETWEEN Text Values
+
+```sql
+SELECT * FROM tableName
+WHERE column1 NOT BETWEEN textValue1 AND textValue1
+ORDER BY column;
+```
+
+#### 17.5. BETWEEN Dates
+
+```sql
+SELECT * FROM tableName;
+WHERE column BETWEEN #day/month/year# AND #day/month/year#;
+```
+
+## 18. AS
+[Back to Table of Contents](#table-of-contents)
+
+SQL aliases `AS` are used to give a table, or a column in a table, a temporary name. An alias only exists for the duration of that query.
+
+```sql
+SELECT column1 AS newName
+FROM tableName; 
+```
+
+#### 18.1. Aliases With a Space Character
+
+- using [square brackets] 
+```sql
+SELECT tableName AS [some text with spaces]
+FROM Products;
+```
+
+- using "double quotes"
+```sql
+SELECT tableName AS "some text with spaces"
+FROM Products;
+```
+
+#### 18.2. Concatenate Columns
+
+```sql
+SELECT column1, column2 + ', ' + column3 + ' ' + column5 + ', ' + column4 AS newName
+FROM tableName; 
+```
+
+- MySQL
+```sql
+SELECT column1, CONCAT(column2, ', ',column3,' ',column5,', ',column4) AS newName
+FROM tableName; 
+```
+
+#### 18.3. Alias for Tables
+
+- Using more than one table in your queries, it can make the SQL statements shorter.
+
+```sql
+SELECT t1.column1, t1.column2, t2.colum1
+FROM tableName1 AS t1, tableName2 AS t2
+WHERE t2.column1='some txt' AND t2.ID = t1.ID;
+```
+
+- without aliases
+```sql
+SELECT tableName1.column1, tableName1.column2, tableName2.colum1
+FROM tableName1, tableName2
+WHERE tableName2.column1='some txt' AND tableName2.ID = tableName1.ID;
+```
+
+## 19. JOIN
+[Back to Table of Contents](#table-of-contents)
+
+A `JOIN` clause is used to combine rows from two or more tables, based on a related column between them.
+
+#### 19.1. INNER JOIN
+Returns records that have matching values in both tables.
+
+**Note:**
+*The `INNER JOIN` keyword returns only rows with a match in both tables. Which means that if you have a product with no column1, or with a column1 that is not present in the tableName1 table, that record would not be returned in the result.*
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/inner-join.png" alt="Inner Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 
+        <span style="color:#bf7ccc">INNER JOIN</span> tableName2 
+        <span style="color:#bf7ccc">ON</span> tableName1.ID = tableName2.ID      
+    </pre>
+  </div>
+</div>
+
+- Naming the Columns
+It is a good practice to include the table name when specifying columns in the SQL statement.
+
+```sql
+  SELECT tab1.ProductID, tab1.ProductName, tab2.CategoryName
+  FROM tableName1
+  INNER JOIN tableName2 ON tab1.CategoryID = tab2.CategoryID;
+```
+
+- `JOIN` and `INNER JOIN` will return the same result. `INNER` is the default join type for `JOIN`, so when you write `JOIN` the parser actually writes `INNER JOIN`.
+
+- `JOIN` Three Tables
+
+```sql
+  SELECT tab1.column1, tab2.column1, tab3.column1
+  FROM ((tableName1
+  INNER JOIN tableName2 ON tab1.ID = tab2.ID)
+  INNER JOIN tableName3 ON tab1.ID = tab3.ID); 
+```
+
+#### 19.2. LEFT OUTER JOIN
+Returns all records from the left table, and the matched records from the right table. The result is 0 records from the right side, if there is no match.
+
+**Note:**
+**In some databases `LEFT JOIN` is called `LEFT OUTER JOIN`.*
+***The `LEFT JOIN` keyword returns all records from the left table, even if there are no matches in the right table*
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/left-join.png" alt="Left Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 
+        <span style="color:#bf7ccc">LEFT JOIN</span> tableName2 
+        <span style="color:#bf7ccc">ON</span> tableName1.ID = tableName2.ID      
+    </pre>
+  </div>
+</div>
+
+#### 19.3. RIGHT OUTER JOIN
+Returns all records from the right table, and the matched records from the left table. The result is 0 records from the left side, if there is no match.
+
+**Note:**
+**In some databases `RIGHT JOIN` is called `RIGHT OUTER JOIN`.*
+***The `RIGHT JOIN` keyword returns all records from the right table, even if there are no matches in the left table.*
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/right-join.png" alt="Right Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 
+        <span style="color:#bf7ccc">RIGHT JOIN</span> tableName2 
+        <span style="color:#bf7ccc">ON</span> tableName1.ID = tableName2.ID      
+    </pre>
+  </div>
+</div>
+
+#### 19.4. FULL OUTER JOIN
+Returns all records when there is a match in either left or right table.
+
+**Note:**
+**`FULL OUTER JOIN` and `FULL JOIN` are the same.*
+***`FULL OUTER JOIN` can potentially return very large result-sets*
+****The `FULL OUTER JOIN` keyword returns all matching records from both tables whether the other table matches or not. So, if there are rows in "tableName1" that do not have matches in "tableName2", or if there are rows in "tableName2" that do not have matches in "tableName1", those rows will be listed as well.*
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/outer-join.png" alt="Full Outer Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 
+        <span style="color:#bf7ccc">FULL OUTER JOIN</span> tableName2 
+        <span style="color:#bf7ccc">ON</span> tableName1.ID = tableName2.ID      
+    </pre>
+  </div>
+</div>
+
+#### 19.5. LEFT excluding JOIN
+Return all of the records in the left table (t1) that do not match any records in the right table (t2)
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/left-excluding-join.png" alt="Left Excluding Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 <span style="color:#bf7ccc">AS</span> t1
+        <span style="color:#bf7ccc">LEFT JOIN</span> tableName2 <span style="color:#bf7ccc">AS</span> t2
+        <span style="color:#bf7ccc">ON</span> t1.ID = t2.ID 
+        <span style="color:#bf7ccc">WHERE</span> t2.ID <span style="color:#bf7ccc">IS NULL</span>     
+    </pre>
+  </div>
+</div>
+
+#### 19.6. RIGHT excluding JOIN
+Return all of the records in the right table (t2) that do not match any records in the left table (t1)
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/right-excluding-join.png" alt="Right Excluding Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 <span style="color:#bf7ccc">AS</span> t1
+        <span style="color:#bf7ccc">RIGHT JOIN</span> tableName2 <span style="color:#bf7ccc">AS</span> t2
+        <span style="color:#bf7ccc">ON</span> t1.ID = t2.ID 
+        <span style="color:#bf7ccc">WHERE</span> t1.ID <span style="color:#bf7ccc">IS NULL</span>     
+    </pre>
+  </div>
+</div>
+
+#### 19.7. FULL OUTER excluding JOIN
+Return all of the records in the left table (t1) and all of the records in the right table (t2) that do not match
+
+<div style="display: flex; height: 200px; margin-bottom: 35px">
+  <img src="./assets/images/outer-excluding-join.png" alt="Outer Excluding Join" />
+
+  <div style="flex-grow: 1; overflow: hidden;">
+    <pre style="margin: 0; height: 200px; color: white">      
+        <span style="color:#bf7ccc">SELECT</span> column 
+        <span style="color:#bf7ccc">FROM</span> tableName1 <span style="color:#bf7ccc">AS</span> t1
+        <span style="color:#bf7ccc">FULL OUTER JOIN</span> tableName2 <span style="color:#bf7ccc">AS</span> t2
+        <span style="color:#bf7ccc">ON</span> t1.ID = t2.ID 
+        <span style="color:#bf7ccc">WHERE</span> t1.ID <span style="color:#bf7ccc">IS NULL OR</span> t2.ID <span style="color:#bf7ccc">IS NULL</span>     
+    </pre>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
