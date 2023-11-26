@@ -51,24 +51,45 @@
 - [16. IN](#16-in)
   - [16.1. IN and NOT IN](#161-in-and-not-in)
   - [16.2. NOT IN](#162-not-in)
-- [17. BETWEEN](#between)
+- [17. BETWEEN](#17-between)
   - [17.1. NOT BETWEEN](#171-not-between)
   - [17.2. BETWEEN with IN](#172-between-with-in)
   - [17.3. BETWEEN Text Values](#173-between-text-values)
   - [17.4. NOT BETWEEN Text Values](#174-not-between-text-values)
-  - [17.5. BETWEEN Dates](#174-between-dates)
-- [18. AS](#as)
+  - [17.5. BETWEEN Dates](#175-between-dates)
+- [18. AS](#18-as)
   - [18.1. Aliases With a Space Character](#181-aliases-with-a-space-character)
   - [18.2. Concatenate Columns](#182-concatenate-columns)
-  - [18.3. Alias for Tables](#183-alias-for-tables)
-- [19. JOIN](#join)
+  - [18.3. Virtual Columns](#183-virtual-columns)
+  - [18.4. Alias for Tables](#184-alias-for-tables)
+- [19. JOIN](#19-join)
   - [19.1. INNER JOIN](#191-inner-join)
   - [19.2. LEFT OUTER JOIN](#192-left-outer-join)
   - [19.3. RIGHT OUTER JOIN](#193-right-outer-join)
   - [19.4. FULL OUTER JOIN](#194-full-outer-join)
   - [19.5. LEFT excluding JOIN](#195-left-excluding-join)
   - [19.6. RIGHT excluding JOIN](#196-right-excluding-join)
-  - [19.7. FULL OUTER excluding JOIN](#197-outer-excluding-join)
+  - [19.7. FULL OUTER excluding JOIN](#197-full-outer-excluding-join)
+  - [19.8. Self JOIN](#198-self-join)
+- [20. UNION](#20-union)
+  - [20.1. UNION ALL](#201-union-all)
+  - [20.2. UNION With WHERE](#202-union-with-where)
+  - [20.3. UNION ALL With WHERE](#203-union-all-with-where)
+- [21. GROUP BY](#21-group-by)
+  - [21.1. GROUP BY With JOIN](#211-group-by-with-join)
+- [22. HAVING](#22-having)
+- [23. EXISTS](#23-exists)
+- [24. ANY and ALL](#24-any-and-all)
+  - [24.1. ANY](#241-any)
+  - [24.2. ALL](#242-all)
+- [25. SELECT INTO](#25-select-into)
+- [26. INSERT INTO SELECT](#26-insert-into-select)
+- [27. CASE](#27-case)
+- [28. Stored Procedures](#28-stored-procedures)
+- [29. Comments](#29-comments)
+  - [29.1. Single Line Comments](#291-single-line-comments)
+  - [29.2. Multi-line Comments](#292-multi-line-comments)
+- [30. Operators](#30-operators)
 
 
 ## 1. SELECT 
@@ -559,7 +580,16 @@ SELECT column1, CONCAT(column2, ', ',column3,' ',column5,', ',column4) AS newNam
 FROM tableName; 
 ```
 
-#### 18.3. Alias for Tables
+#### 18.3. Virtual Columns
+
+When you use a literal value or expression in a `SELECT` statement, you are essentially creating a virtual or temporary column in the result set. This column is not part of the original table but is generated on the fly during the query execution.
+
+```sql
+SELECT 'Hello' AS Greeting, Name
+FROM Users;
+```
+
+#### 18.4. Alias for Tables
 
 - Using more than one table in your queries, it can make the SQL statements shorter.
 
@@ -732,17 +762,329 @@ Return all of the records in the left table (t1) and all of the records in the r
   </div>
 </div>
 
+#### 19.8. Self JOIN
 
+A self join is a regular join, but the table is joined with itself.
 
+```sql
+SELECT column
+FROM tableName T1, tableName T2
+WHERE condition;
+```
 
+**Note:**
+*`T1` and `T2` are different table aliases for the same table.*
 
+```sql
+SELECT a.column1, b.column1, a.column2
+FROM tableName a, tableName b
+WHERE a.ID <> b.ID
+AND a.column2 = b.column2
+ORDER BY a.column2;
+```
 
+**Note:**
+*`<>` means `NOT EQUAL`*
 
+## 20. UNION
+[Back to Table of Contents](#table-of-contents)
 
+The `UNION` operator is used to combine the result-set of two or more `SELECT` statements.
 
+- Every `SELECT` statement within `UNION` must have the same number of columns
+- The columns must also have similar data types
+- The columns in every `SELECT` statement must also be in the same order
 
+```sql
+SELECT column FROM tableName1
+UNION
+SELECT column FROM tableName2;
+```
 
+#### 20.1. UNION ALL
 
+The `UNION` operator selects only distinct values by default. To allow duplicate values, use `UNION ALL`
 
+```sql
+SELECT column FROM tableName1
+UNION ALL
+SELECT column FROM tableName2;
+```
 
+**Note:**
+*The column names in the result-set are usually equal to the column names in the first `SELECT` statement.*
 
+#### 20.2. UNION With WHERE
+
+```sql
+SELECT column1, column2 FROM tableName1
+WHERE column2 = 'text'
+UNION
+SELECT column2, column3 FROM tableName2
+WHERE column3 = 'text'
+ORDER BY column1;
+```
+
+#### 20.3. UNION ALL With WHERE
+
+```sql
+SELECT column1, column2 FROM tableName1
+WHERE column2 = 'text'
+UNION ALL
+SELECT column2, column3 FROM tableName2
+WHERE column3 = 'text'
+ORDER BY column1;
+```
+
+## 21. GROUP BY
+[Back to Table of Contents](#table-of-contents)
+
+The `GROUP BY` statement groups rows that have the same values into summary rows, like "find the number of customers in each country".
+
+The `GROUP BY` statement is often used with aggregate functions `COUNT()`, `MAX()`, `MIN()`, `SUM()`, `AVG()` to group the result-set by one or more columns.
+
+```sql
+SELECT COUNT(column1) AS [Count], column2
+FROM tableName
+GROUP BY column2;
+```
+
+#### 21.1. GROUP BY With JOIN
+
+```sql
+SELECT tab1.column1, COUNT(tab2.column2) AS customColumnName FROM tableName2 AS tab2
+LEFT JOIN tableName1 AS tab1 ON tab2.ID = tab1.ID
+GROUP BY column1;
+```
+
+## 22. HAVING
+[Back to Table of Contents](#table-of-contents)
+
+The `HAVING` clause was added to SQL because the `WHERE` keyword cannot be used with aggregate functions.
+
+```sql
+SELECT COUNT(id), column
+FROM tableName
+GROUP BY column
+HAVING COUNT(id) > 5;
+```
+
+## 23. EXISTS
+[Back to Table of Contents](#table-of-contents)
+
+The `EXISTS` operator is used to test for the existence of any record in a subquery.
+The `EXISTS` operator returns `TRUE` if the subquery returns one or more records.
+
+```sql
+SELECT column1
+FROM tableName1
+WHERE EXISTS (
+  SELECT column2 FROM tableName1 WHERE tableName1.ID = tableName1.ID AND column3 < 20
+);
+```
+
+## 24. ANY and ALL
+[Back to Table of Contents](#table-of-contents)
+
+The `ANY` and `ALL` operators allow you to perform a comparison between a single column value and a range of other values.
+
+#### 24.1. ANY
+
+The `ANY` operator:
+- returns a boolean value as a result
+- returns `TRUE` if ANY of the subquery values meet the condition
+
+`ANY` means that the condition will be true if the operation is true for any of the values in the range.
+
+```sql
+SELECT column
+FROM tableName
+WHERE column operator ANY
+  (SELECT column
+  FROM tableName
+  WHERE condition); 
+```
+
+**Note:**
+*The operator must be a standard comparison operator (=, <>, !=, >, >=, <, or <=).*
+
+#### 24.2. ALL
+
+The `ALL` operator:
+- returns a boolean value as a result
+- returns `TRUE` if `ALL` of the subquery values meet the condition
+- is used with `SELECT`, `WHERE` and `HAVING` statements
+
+```sql
+SELECT ALL column
+FROM tableName
+WHERE condition;
+```
+
+`ALL` means that the condition will be true only if the operation is true for all values in the range. 
+
+## 25. SELECT INTO
+[Back to Table of Contents](#table-of-contents)
+
+The `SELECT INTO` statement copies data from one table into a new table.
+
+```sql
+-- Copy all columns into a new table in another database
+SELECT *
+INTO newTable IN 'backup.db'
+FROM oldTable
+WHERE condition;
+```
+
+```sql
+-- Copy only some columns into a new table
+SELECT column1, column2, column3, ...
+INTO newTable IN 'backup.db'
+FROM oldTable
+WHERE condition;
+```
+
+```sql
+-- Copies data from more than one table into a new table
+SELECT tableName1.column1, tableName2.column2
+INTO backup2023
+FROM tableName1
+LEFT JOIN tableName2 ON tableName1.ID = tableName2.ID;
+```
+
+## 26. INSERT INTO SELECT
+[Back to Table of Contents](#table-of-contents)
+
+The `INSERT INTO SELECT` statement copies data from one table and inserts it into another table.
+The `INSERT INTO SELECT` statement requires that the data types in source and target tables match.
+
+**Note:** 
+*The existing records in the target table are unaffected.*
+
+```sql
+-- Copy all columns from one table to another table
+INSERT INTO tableName2
+SELECT * FROM tableName1
+WHERE condition;
+```
+
+```sql
+-- Copy only some columns from one table into another table
+INSERT INTO tableName2 (column1, column2, column3, ...)
+SELECT column1, column2, column3, ...
+FROM tableName1
+WHERE condition;
+```
+
+## 27. CASE
+[Back to Table of Contents](#table-of-contents)
+
+The `CASE` expression goes through conditions and returns a value when the first condition is met (like an if-then-else statement). So, once a condition is true, it will stop reading and return the result. If no conditions are true, it returns the value in the ELSE clause.
+
+If there is no ELSE part and no conditions are true, it returns NULL.
+
+```sql
+SELECT column1, column2,
+CASE 
+  WHEN column2 > 30 THEN 'Is more than 30'
+  WHEN column2 = 30 THEN 'Is 30'
+ELSE 'Is under 30'
+END AS customColumnText
+FROM tableName;
+```
+
+```sql
+SELECT column1, column2, column3 FROM tableName
+ORDER BY (
+CASE
+	WHEN column2 IS NULL THEN column3
+ELSE column2
+END);
+```
+
+## 28. Stored Procedures
+[Back to Table of Contents](#table-of-contents)
+
+A stored procedure is a prepared SQL code that you can save, so the code can be reused over and over again.
+
+So if you have an SQL query that you write over and over again, save it as a stored procedure, and then just call it to execute it.
+
+You can also pass parameters to a stored procedure, so that the stored procedure can act based on the parameter value(s) that is passed.
+
+## 29. Comments
+[Back to Table of Contents](#table-of-contents)
+
+#### 29.1. Single Line Comments
+
+```sql
+-- Select all:
+SELECT * FROM tableName;
+```
+
+```sql
+SELECT * FROM tableName -- WHERE City='Berlin';
+```
+
+#### 29.2. Multi-line Comments
+
+```sql
+/* some text
+ between */
+SELECT * FROM tableName;
+```
+
+```sql
+SELECT column1, /*column2,*/ column3 FROM tableName;
+```
+
+## 30. Operators
+[Back to Table of Contents](#table-of-contents)
+
+#### 30.1. Arithmetic Operators
+
+| Operator | Description | Example |
+| ----------- | ----------- | ----------- |
+| + | Add | SELECT 1 + 2; |
+| - | Subtract | SELECT 2 - 1; |
+| * | Multiply | SELECT 2 * 2; |
+| / | Divide | SELECT 10 / 2; |
+| % | Modulo | SELECT 10 % 2; |
+
+#### 30.2. Comparison Operators
+
+| Operator | Description | Example |
+| ----------- | ----------- | ----------- |
+| = | Equal to | SELECT * FROM tableName WHERE column = 1; |
+| > | Greater than | SELECT * FROM tableName WHERE column > 1; |
+| < | Less than | SELECT * FROM tableName WHERE column < 1; |
+| >= | Greater than or equal to | SELECT * FROM tableName WHERE column >= 1; |
+| <= | Less than or equal to | SELECT * FROM tableName WHERE column <= 1; |
+| <> | Not equal to | SELECT * FROM tableName WHERE column <> 1; |
+
+#### 30.3. Compound Operators
+
+| Operator | Description | 
+| ----------- | ----------- |
+| += | Add equals | 
+| -= | Subtract equals | 
+| *= | Multiply equals | 
+| /= | Divide equals | 
+| %= | Modulo equals | 
+| &= | Bitwise AND equals |
+| ^-= | Bitwise exclusive equals | 
+| \|*= | Bitwise OR equals | 
+
+#### 30.4. Logical Operators
+
+| Operator | Description | 
+| ----------- | ----------- |
+| ALL | TRUE if all of the subquery values meet the condition | 
+| AND | TRUE if all the conditions separated by AND is TRUE | 
+| ANY | TRUE if any of the subquery values meet the condition | 
+| BETWEEN | TRUE if the operand is within the range of comparisons | 
+| EXISTS | TRUE if the subquery returns one or more records | 
+| IN | TRUE if the operand is equal to one of a list of expressions |
+| LIKE | TRUE if the operand matches a pattern | 
+| NOT | Displays a record if the condition(s) is NOT TRUE | 
+| OR | TRUE if any of the conditions separated by OR is TRUE | 
+| SOME | TRUE if any of the subquery values meet the condition | 
